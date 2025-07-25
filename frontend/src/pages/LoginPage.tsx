@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
 
-const Login = () => {
+const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -135,4 +135,4 @@ const Login = () => {
   );
 };
 
-export default Login
+export default LoginPage

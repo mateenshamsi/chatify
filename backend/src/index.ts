@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express'
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 const app = express();
 
 dotenv.config();
@@ -17,6 +19,14 @@ connectDB().then(() => {
 } ).catch((error) => {
   console.error('Database connection failed:', error);  
 }) 
+console.log(`Client URL: ${process.env.CLIENT_URL}`);
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+}));
+
+app.use(cookieParser());
+
 app.use('/api', router); 
 
 app.listen(PORT, () => {

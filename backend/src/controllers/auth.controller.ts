@@ -30,7 +30,9 @@ export const registerController = async (req:Request, res:Response) => {
         console.log('User created successfully:', newUser);
         return res.status(201).json({
             message: 'User created successfully',
-            newUser})
+            newUser,
+            token
+        });
   
   } catch (error) {
     console.error('Error during signup:', error);
@@ -79,24 +81,74 @@ export const logoutController = (req: Request, res: Response) => {
 }
 
 export const updateProfileController = async (req: Request, res: Response) => {
-    try{
-        const {profilePic} = req.body;
-        const  userId=req.user?._id 
+    try {
+        const { profilePic } = req.body;
+        const userId = req.user?._id;
+        
+        // Validate required fields
+        if (!profilePic) {
+            return res.status(400).json({ error: 'Profile picture is required' });
+        }
+        
+        if (!userId) {
+            return res.status(401).json({ error: 'User not authenticated' });
+        }
+        
+        // Check if user exists
         const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // Upload to Cloudinary
         const cloudinaryResponse = await cloudinary.uploader.upload(profilePic, {
             folder: 'chatty/profile_pictures',
             allowed_formats: ['jpg', 'png', 'jpeg'],
             transformation: [{ width: 500, height: 500, crop: 'fill' }]
-        });  
-        const updatedUser = await User.findByIdAndUpdate(userId, {
-            profilePicture: cloudinaryResponse.secure_url
-        }, { new: true });
+        });
+        
+        // Update user profile picture
+        const updatedUser = await User.findByIdAndUpdate(
+            userId, 
+            {
+                profilePicture: cloudinaryResponse.secure_url
+            }, 
+            { 
+                new: true,
+                select: '-password' // Exclude password from response
+            }
+        );
+        
         if (!updatedUser) {
             return res.status(404).json({ error: 'User not found' });
-        }      
-    }
-    catch (error) {
+        }
+        
+        // Return success response
+        return res.status(200).json({
+            message: 'Profile updated successfully',
+            user: updatedUser
+        });
+        
+    } catch (error:any) {
         console.error('Error during profile update:', error);
-        return res.status(500).json({ error: 'An error occurred while updating the profile' });
-    }  
-} 
+        
+        // Handle specific Cloudinary errors
+        if (error.name === 'CloudinaryError') {
+            return res.status(400).json({ 
+                error: 'Invalid image format or upload failed' 
+            });
+        }
+        
+        return res.status(500).json({ 
+            error: 'An error occurred while updating the profile' 
+        });
+    }
+}
+export const checkAuth = (req:Request, res:Response) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error:any) {
+    console.log("Error in checkAuth controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

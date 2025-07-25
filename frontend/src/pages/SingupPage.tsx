@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -6,29 +6,23 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
-// Import your auth store
-// import { useAuthStore } from "@/store/useAuthStore"; // Uncomment and adjust path as needed
 
+import { useAuthStore } from "@/store/useAuthStore"; 
 const SignupPage = () => {
+  const { isSigningUp,authUser,checkAuth,signup } = useAuthStore(); 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
+    username: "",
     email: "",
     password: "",
   });
-
-  // Uncomment this when you have your auth store set up
-  // const { signup, isSigningUp } = useAuthStore();
   
-  // Temporary placeholder - replace with actual auth store
-  const signup = (data: typeof formData) => {
-    console.log("Signup called with:", data);
-    // Your signup logic here
-  };
-  const isSigningUp = false; // Replace with actual loading state
+ 
 
+  
+  
   const validateForm = () => {
-    if (!formData.fullName.trim()) return toast.error("Full name is required");
+    if (!formData.username.trim()) return toast.error("Full name is required");
     if (!formData.email.trim()) return toast.error("Email is required");
     if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
     if (!formData.password) return toast.error("Password is required");
@@ -44,7 +38,7 @@ const SignupPage = () => {
 
     if (success === true) {
       signup(formData);
-      toast.success("Account created successfully!");
+      
     }
   };
 
@@ -69,17 +63,17 @@ const SignupPage = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-[#BC6C25] font-medium">
+                <Label htmlFor="username" className="text-[#BC6C25] font-medium">
                   Full Name
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#BC6C25]/60" />
                   <Input
-                    id="fullName"
+                    id="username"
                     type="text"
                     placeholder="John Doe"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     className="pl-10 transition-all duration-300 focus:shadow-md"
                   />
                 </div>
@@ -160,6 +154,7 @@ const SignupPage = () => {
           </CardContent>
         </Card>
       </div>
+
     </div>
   );
 };
