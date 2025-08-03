@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, redirect } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
+import { useAuthStore } from "@/store/useAuthStore";
+import { set } from "date-fns";
 
 const LoginPage = () => {
+  const {login,isLoggingIn} = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -22,18 +24,18 @@ const LoginPage = () => {
       toast.error("Please fill in all fields");
       return;
     }
-
-    setIsLoggingIn(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success("Welcome back!");
-    } catch (error) {
-      toast.error("Login failed. Please try again.");
-    } finally {
-      setIsLoggingIn(false);
+    try{
+      await login(formData);
+      toast.success("Login successful!");
+      setFormData({ email: "", password: "" });
+  
+      redirect('/');
     }
+
+    catch (error) {
+      toast.error("Login failed. Please try again.");
+      console.error("Login error:", error);
+    } 
   };
 
   return (

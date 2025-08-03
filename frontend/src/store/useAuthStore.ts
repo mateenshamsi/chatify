@@ -8,6 +8,10 @@ type signUpData = {
     email: string
     password: string
 }
+type loginData={
+    email: string
+    password: string
+}
 interface AuthUser {
     // Define properties based on your API response, e.g.:
     id: string
@@ -24,6 +28,9 @@ interface AuthStoreState {
     isUpdatingProfile: boolean
     checkAuth: () => Promise<void>
     signup:(data:signUpData) => Promise<void>
+    login:(data:loginData) => Promise<void>
+    logout:() => Promise<void>
+    
 }
 
 export const useAuthStore = create<AuthStoreState>((set) => ({
@@ -55,5 +62,35 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
             toast.error("Failed to create account",error.message)
             set({ isSigningUp: false })
         }
+    },
+    login: async (data:loginData) => {
+        set({ isLoggingIn: true })
+        try {
+            const response = await axiosInstance.post('/api/auth/login', data)
+            if (!response.data || !response.data.user) {
+                throw new Error("Invalid login response")
+            }
+            console.log('Login response:', response.data)   
+            set({ authUser: response.data.user, isLoggingIn: false })
+            toast.success("Logged in successfully!")
+            redirect('/')   
+        } catch (error:any) {
+            console.error("Login error:", error)
+            toast.error("Failed to log in", error.message)
+            set({ isLoggingIn: false })
+        }
+    },
+    logout: async () => {
+        
+      try{ 
+        await axiosInstance.post('/api/auth/logout')
+        set({ authUser: null })
+        redirect('/login') 
+        toast.success("Logged out successfully!")
+        }
+        catch (error) {
+                console.error("Logout error:", error)
+                toast.error("Failed to log out")
+            }
     }
 }))
