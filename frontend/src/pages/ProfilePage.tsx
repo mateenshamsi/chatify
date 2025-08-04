@@ -94,7 +94,7 @@ function ProfilePage() {
               <div className="relative">
                 <Avatar className="w-32 h-32">
                   <AvatarImage
-                    src={selectedImage || authUser.image || '/avatar.png'}
+                    src={selectedImage || authUser.profilePicture || '/avatar.png'}
                     alt="Profile"
                     className="object-cover"
                   />

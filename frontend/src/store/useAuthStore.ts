@@ -23,7 +23,7 @@ interface AuthUser {
     id: string
     username: string
     email: string
-    image: string | null
+    profilePicture: string | null
     // Add more fields as needed
 }
 
@@ -115,9 +115,9 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
         'Content-Type': 'multipart/form-data',
       },
     });
-
+    console.log('Update response:', response.data);
     toast.success('Profile updated!');
-    set({ authUser: response.data, isUpdatingProfile: false });
+    set({ authUser: response.data.user, isUpdatingProfile: false });
   } catch (error: any) {
     console.error('Update failed:', error);
     toast.error('Failed to update profile');
