@@ -37,7 +37,7 @@ interface AuthStoreState {
     signup:(data:signUpData) => Promise<void>
     login:(data:loginData) => Promise<void>
     logout:() => Promise<void>
-    updateProfile:(isUpdatingProfile:boolean,data: updateProfileData) => Promise<void>
+    updateProfile:(data: updateProfileData) => Promise<void>
    
 }
 
@@ -102,35 +102,28 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
             }
     },
   updateProfile: async (data: updateProfileData) => {
-    set({ isUpdatingProfile: true});
-    try {
-        let response;
-        console.log(data)
-        if (data.profilePicture) {
-           
-            const formData = new FormData();
-            if (data.username) formData.append('username', data.username);
-            if (data.email) formData.append('email', data.email);
-           
-            formData.append('profilePicture', data.profilePicture);
+  set({ isUpdatingProfile: true });
 
-            response = await axiosInstance.put('/api/auth/update-profile', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-        } else {
-          
-            response = await axiosInstance.put('/api/auth/update-profile', data);
-        }
+  try {
+    const formData = new FormData();
+    if (data.username) formData.append('username', data.username);
+    if (data.email) formData.append('email', data.email);
+    if (data.profilePicture) formData.append('profilePicture', data.profilePicture);
 
-        toast.success('Profile updated!');
-        set({ authUser: response.data, isUpdatingProfile: false });
-    } catch (error: any) {
-        console.error('Update failed:', error);
-        toast.error('Failed to update profile');
-        set({ isUpdatingProfile: false });
-    }
+    const response = await axiosInstance.put('/api/auth/update-profile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    toast.success('Profile updated!');
+    set({ authUser: response.data, isUpdatingProfile: false });
+  } catch (error: any) {
+    console.error('Update failed:', error);
+    toast.error('Failed to update profile');
+    set({ isUpdatingProfile: false });
+  }
 },
+
 
 }))

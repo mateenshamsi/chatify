@@ -96,7 +96,9 @@ export const updateProfileController = async (req: Request, res: Response) => {
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
-
+    if (!req.body && !req.file) {
+      return res.status(400).json({ error: 'No update fields provided' });
+    }
     const { username, email } = req.body;
     const file = req.file; // multer handles this
     const updateFields: any = {};
