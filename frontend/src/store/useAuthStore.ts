@@ -12,11 +12,18 @@ type loginData={
     email: string
     password: string
 }
+type updateProfileData = {
+    username?: string
+    email?: string
+    password?: string
+    profilePicture?:string| File | null
+}
 interface AuthUser {
     // Define properties based on your API response, e.g.:
     id: string
     username: string
     email: string
+    image: string | null
     // Add more fields as needed
 }
 
@@ -30,7 +37,8 @@ interface AuthStoreState {
     signup:(data:signUpData) => Promise<void>
     login:(data:loginData) => Promise<void>
     logout:() => Promise<void>
-    
+    updateProfile:(isUpdatingProfile:boolean,data: updateProfileData) => Promise<void>
+   
 }
 
 export const useAuthStore = create<AuthStoreState>((set) => ({
@@ -92,5 +100,37 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
                 console.error("Logout error:", error)
                 toast.error("Failed to log out")
             }
+    },
+  updateProfile: async (data: updateProfileData) => {
+    set({ isUpdatingProfile: true});
+    try {
+        let response;
+        console.log(data)
+        if (data.profilePicture) {
+           
+            const formData = new FormData();
+            if (data.username) formData.append('username', data.username);
+            if (data.email) formData.append('email', data.email);
+           
+            formData.append('profilePicture', data.profilePicture);
+
+            response = await axiosInstance.put('/api/auth/update-profile', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+        } else {
+          
+            response = await axiosInstance.put('/api/auth/update-profile', data);
+        }
+
+        toast.success('Profile updated!');
+        set({ authUser: response.data, isUpdatingProfile: false });
+    } catch (error: any) {
+        console.error('Update failed:', error);
+        toast.error('Failed to update profile');
+        set({ isUpdatingProfile: false });
     }
+},
+
 }))

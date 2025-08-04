@@ -25,7 +25,7 @@ function Navbar() {
         </Link>
 
         {authUser && (
-         <div className='flex gap-3'> 
+         <div className='flex gap-2'> 
          <Link to="/profile" className="text-2xl font-bold text-[#BC6C25] flex items-center gap-2">
             <div className="p-3 rounded-2xl w-fit bg-gradient-to-br from-[#DDA15E] to-[#BC6C25] shadow-lg">
               <UserCircle2 className="size-5 text-white" />
