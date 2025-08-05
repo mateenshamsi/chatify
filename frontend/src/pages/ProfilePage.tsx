@@ -79,7 +79,7 @@ function ProfilePage() {
   return (
     <div className="min-h-screen pt-20" style={{ backgroundColor: '#FEFAE0' }}>
       <div className="max-w-2xl mx-auto p-4 py-8">
-        <Card className="border-0 shadow-lg" style={{ backgroundColor: '#FEFAE0' }}>
+        <Card className="border-0 shadow-lg" style={{ backgroundColor: 'white' }}>
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center" style={{ color: '#BC6C25' }}>
               Profile
@@ -112,7 +112,7 @@ function ProfilePage() {
                 <Button
                   size="icon"
                   variant="outline"
-                  className="absolute -bottom-2 -right-2 rounded-full shadow-lg border-2"
+                  className="absolute  -bottom-2 -right-2 rounded-full shadow-lg border-2"
                   style={{
                     backgroundColor: '#DDA15E',
                     borderColor: '#BC6C25',
@@ -175,11 +175,11 @@ function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex w-full ">
               <Button
                 onClick={handleSaveProfile}
                 disabled={isUpdatingProfile}
-                className="gap-2"
+                className="gap-2 w-full"
                 style={{ backgroundColor: '#BC6C25', color: '#FEFAE0' }}
               >
                 {isUpdatingProfile ? (

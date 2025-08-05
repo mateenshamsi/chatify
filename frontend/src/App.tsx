@@ -5,7 +5,7 @@ import Login from './pages/LoginPage';
 import { useAuthStore} from './store/useAuthStore';
 import { Toaster } from 'react-hot-toast';
 import { HomePage, ProfilePage, SettingsPage,LoginPage,SignupPage } from './pages';
-import Navbar from './components/shared/Navbar';
+import Navbar from './components/Navbar';
 
 function App() {
   const {authUser,checkAuth} = useAuthStore()

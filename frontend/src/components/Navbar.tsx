@@ -2,7 +2,7 @@ import { LogOut, MessageSquare, SettingsIcon, UserCircle2 } from 'lucide-react'
 import React from 'react'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Link } from 'react-router-dom'
-import { Button } from '../ui/button'
+import { Button } from './ui/button'
 
 function Navbar() {
   const { logout, authUser } = useAuthStore()
