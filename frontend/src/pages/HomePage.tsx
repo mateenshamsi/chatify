@@ -1,24 +1,29 @@
 import { useChatStore } from '@/store/useChatStore'
-import { Sidebar } from 'lucide-react';
 import React from 'react'
-import ChatContainer from '@/components/ChatContainer';
-import NoChatSelected from '@/components/NoChatSelected';
-function Home() {
-  const {selectedUser} = useChatStore((state) => state);
-  return (
-    <div className='h-screen '>
-      <div className='flex items-center justify-center pt-20 px-4'>
-       <div>
-          <div className='rounded-lg shadow-cl w-full max-w-6xl h-[calc(100vh-8rem)]'>
-            <div className='flex h-full rounded-lg overflow-hidden'>
-              <Sidebar/> 
-              {!selectedUser ? <NoChatSelected/>:<ChatContainer/>}
-            </div>
+import ChatContainer from '@/components/ChatContainer'
+import NoChatSelected from '@/components/NoChatSelected'
+import SidebarComponent from '@/components/SidebarComponent'
 
-          </div>
-       </div>
+function Home() {
+  const { selectedUser } = useChatStore((state) => state)
+
+  return (
+    <div className="h-full flex bg-gray-50 overflow-hidden">
+      {/* Users List - Hidden on mobile when chat is selected */}
+      <div className={`${selectedUser ? 'hidden lg:flex' : 'flex'} shrink-0`}>
+        <SidebarComponent />
       </div>
-      
+        
+      {/* Main Chat Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {!selectedUser ? (
+          <div className="hidden lg:flex flex-col justify-center items-center h-full">
+            <NoChatSelected />
+          </div>
+        ) : (
+          <ChatContainer />
+        )}
+      </div>
     </div>
   )
 }
