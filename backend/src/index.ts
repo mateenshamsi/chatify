@@ -2,11 +2,12 @@ import express, { Request, Response } from 'express'
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-const app = express();
+
 
 dotenv.config();
 import router from './routes/root'; 
 import { connectDB } from './lib/db';
+import { server,app} from './lib/socket';
 
 const PORT = process.env.PORT ;
 app.use(express.json());
@@ -32,7 +33,7 @@ app.use(cookieParser());
 
 app.use('/api', router); 
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 
 });
