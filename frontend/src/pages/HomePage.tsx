@@ -8,14 +8,14 @@ function Home() {
   const { selectedUser } = useChatStore((state) => state)
 
   return (
-    <div className="h-full flex bg-gray-50 overflow-hidden">
-      {/* Users List - Hidden on mobile when chat is selected */}
-      <div className={`${selectedUser ? 'hidden lg:flex' : 'flex'} shrink-0`}>
+    <div className="h-full w-full flex">
+      {/* Sidebar */}
+      <div className={`${selectedUser ? 'hidden lg:flex' : 'flex'}`}>
         <SidebarComponent />
       </div>
         
-      {/* Main Chat Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Chat Area - Takes remaining space */}
+      <div className="flex-1">
         {!selectedUser ? (
           <div className="hidden lg:flex flex-col justify-center items-center h-full">
             <NoChatSelected />

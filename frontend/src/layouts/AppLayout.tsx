@@ -8,7 +8,7 @@ export default function AppLayout() {
 
   return (
     <div className="h-screen flex bg-gray-50 overflow-hidden">
-      {/* Mobile Menu Button */}
+
       <button 
         className="fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md lg:hidden"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -16,7 +16,7 @@ export default function AppLayout() {
         {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
-      {/* Mobile Overlay */}
+  
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
@@ -24,7 +24,7 @@ export default function AppLayout() {
         />
       )}
 
-      {/* Sidebar Navigation */}
+   
       <div className={`
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} 
         lg:translate-x-0 fixed lg:relative z-40 w-64 h-full 
@@ -33,7 +33,7 @@ export default function AppLayout() {
         <Navbar />
       </div>
 
-      {/* Main content */}
+    
       <main className="flex-1 flex h-full bg-[#FEFAE0] overflow-hidden">
         <Outlet />
       </main>
