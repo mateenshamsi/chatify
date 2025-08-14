@@ -1,129 +1,181 @@
 import { create } from 'zustand'
 import { axiosInstance } from '@/lib/axios'
-import SignupPage from '../pages/SingupPage';
 import { toast } from 'react-hot-toast'
-import { redirect } from 'react-router-dom';
-type signUpData = { 
-    username: string
-    email: string
-    password: string
+import { io, Socket } from 'socket.io-client'
+
+const BASE_URL = 'http://localhost:3000'
+
+type SignUpData = { 
+  username: string
+  email: string
+  password: string
 }
-type loginData={
-    email: string
-    password: string
+
+type LoginData = {
+  email: string
+  password: string
 }
-type updateProfileData = {
-    username?: string
-    email?: string
-    password?: string
-    profilePicture?:string| File | null
+
+type UpdateProfileData = {
+  username?: string
+  email?: string
+  password?: string
+  profilePicture?: string | File | null
 }
+
 interface AuthUser {
-    // Define properties based on your API response, e.g.:
-    id: string
-    username: string
-    email: string
-    profilePicture: string | null
-    // Add more fields as needed
+  _id: string
+  username: string
+  email: string
+  profilePicture: string | null
 }
 
 interface AuthStoreState {
-    authUser: AuthUser | null
-    isCheckingAuth: boolean
-    isSigningUp: boolean
-    isLoggingIn: boolean
-    isUpdatingProfile: boolean
-    checkAuth: () => Promise<void>
-    signup:(data:signUpData) => Promise<void>
-    login:(data:loginData) => Promise<void>
-    logout:() => Promise<void>
-    updateProfile:(data: updateProfileData) => Promise<void>
-   
+  authUser: AuthUser | null
+  isCheckingAuth: boolean
+  isSigningUp: boolean
+  isLoggingIn: boolean
+  isUpdatingProfile: boolean
+  socket: Socket | null
+  onlineUsers: string[]
+  checkAuth: () => Promise<void>
+  signup: (data: SignUpData) => Promise<void>
+  login: (data: LoginData) => Promise<void>
+  logout: () => Promise<void>
+  updateProfile: (data: UpdateProfileData) => Promise<void>
+  connectSocket: () => void
+  disconnectSocket: () => void
 }
 
-export const useAuthStore = create<AuthStoreState>((set) => ({
-    authUser: null,
-    isCheckingAuth: true,
-    isSigningUp: false,
-    isLoggingIn: false,
-    isUpdatingProfile: false,
-    checkAuth: async () => {
-        try {
-            const auth = await axiosInstance.get('/api/auth/check')
-            set({ authUser: auth.data })
-        } catch (err) {
-            console.log(err)
-            set({ authUser: null })
-        }
-    },
-    signup: async (data:signUpData) => {
-        set({ isSigningUp: true })
-        try {
-            const response = await axiosInstance.post('/api/auth/register', data)
-            console.log('Signup response:', response.data)
-            toast.success("Account created successfully!")
-            redirect('/')
-            set({ authUser: response.data, isSigningUp: false })
-            
-        } catch (error:any) {
-            console.error("Signup error:", error)
-            toast.error("Failed to create account",error.message)
-            set({ isSigningUp: false })
-        }
-    },
-    login: async (data:loginData) => {
-        set({ isLoggingIn: true })
-        try {
-            const response = await axiosInstance.post('/api/auth/login', data)
-            if (!response.data || !response.data.user) {
-                throw new Error("Invalid login response")
-            }
-            console.log('Login response:', response.data)   
-            set({ authUser: response.data.user, isLoggingIn: false })
-            toast.success("Logged in successfully!")
-            redirect('/')   
-        } catch (error:any) {
-            console.error("Login error:", error)
-            toast.error("Failed to log in", error.message)
-            set({ isLoggingIn: false })
-        }
-    },
-    logout: async () => {
-        
-      try{ 
-        await axiosInstance.post('/api/auth/logout')
-        set({ authUser: null })
-        redirect('/login') 
-        toast.success("Logged out successfully!")
-        }
-        catch (error) {
-                console.error("Logout error:", error)
-                toast.error("Failed to log out")
-            }
-    },
-  updateProfile: async (data: updateProfileData) => {
-  set({ isUpdatingProfile: true });
+export const useAuthStore = create<AuthStoreState>((set, get) => ({
+  authUser: null,
+  isCheckingAuth: true,
+  isSigningUp: false,
+  isLoggingIn: false,
+  isUpdatingProfile: false,
+  socket: null,
+  onlineUsers:[],
+  checkAuth: async () => {
+    try {
+      const auth = await axiosInstance.get('/api/auth/check')
+      set({ authUser: auth.data, isCheckingAuth: false })
+      get().connectSocket()
+    } catch (err) {
+      console.log(err)
+      set({ authUser: null, isCheckingAuth: false })
+    }
+  },
 
-  try {
-    const formData = new FormData();
-    if (data.username) formData.append('username', data.username);
-    if (data.email) formData.append('email', data.email);
-    if (data.profilePicture) formData.append('profilePicture', data.profilePicture);
+  signup: async (data) => {
+    set({ isSigningUp: true })
+    try {
+      const res = await axiosInstance.post('/api/auth/register', data)
+      toast.success('Account created successfully!')
+      set({ authUser: res.data, isSigningUp: false })
+      get().connectSocket()
+    } catch (error: any) {
+      console.error('Signup error:', error)
+      toast.error(`Failed to create account: ${error.message}`)
+      set({ isSigningUp: false })
+    }
+  },
 
-    const response = await axiosInstance.put('/api/auth/update-profile', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    console.log('Update response:', response.data);
-    toast.success('Profile updated!');
-    set({ authUser: response.data.user, isUpdatingProfile: false });
-  } catch (error: any) {
-    console.error('Update failed:', error);
-    toast.error('Failed to update profile');
-    set({ isUpdatingProfile: false });
+  login: async (data) => {
+    set({ isLoggingIn: true })
+    try {
+      const res = await axiosInstance.post('/api/auth/login', data)
+      if (!res.data?.user) throw new Error('Invalid login response')
+      set({ authUser: res.data.user, isLoggingIn: false })
+      toast.success('Logged in successfully!')
+      get().connectSocket()
+    } catch (error: any) {
+      console.error('Login error:', error)
+      toast.error(`Failed to log in: ${error.message}`)
+      set({ isLoggingIn: false })
+    }
+  },
+
+  logout: async () => {
+    try {
+      await axiosInstance.post('/api/auth/logout')
+      set({ authUser: null })
+      toast.success('Logged out successfully!')
+      get().disconnectSocket()
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast.error('Failed to log out')
+    }
+  },
+
+  updateProfile: async (data) => {
+    set({ isUpdatingProfile: true })
+    try {
+      const formData = new FormData()
+      if (data.username) formData.append('username', data.username)
+      if (data.email) formData.append('email', data.email)
+      if (data.profilePicture) formData.append('profilePicture', data.profilePicture)
+
+      const res = await axiosInstance.put('/api/auth/update-profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+
+      toast.success('Profile updated!')
+      set({ authUser: res.data.user, isUpdatingProfile: false })
+    } catch (error: any) {
+      console.error('Update failed:', error)
+      toast.error('Failed to update profile')
+      set({ isUpdatingProfile: false })
+    }
+  },
+
+  connectSocket: () => {
+    const {authUser} = get()
+    if(!authUser || get().socket?.connected) {
+        console.log('Cannot connect socket: authUser is', authUser, 'socket connected:', get().socket?.connected)
+        return
+    }
+
+    console.log('Connecting socket with userId:', authUser._id)
+    
+   const socket = io(BASE_URL, {
+  auth: {
+    userId: authUser._id
+  },
+  withCredentials: true
+});
+
+    
+    socket.on('connect', () => {
+      console.log('Socket connected successfully')
+    })
+    
+    socket.on('getOnlineUsers', (onlineUsers: string[]) => {
+      console.log('Received online users:', onlineUsers)
+      set({ onlineUsers })
+    })
+    
+    socket.connect()
+    set({ socket })
+  },
+// Inside your useAuthStore create() function
+
+disconnectSocket: () => {
+  const socket = get().socket;
+  if (socket) {
+    // 1. Emit the 'logout' event to the server BEFORE disconnecting.
+    // This is the crucial new line.
+    socket.emit('logout');
+
+    // 2. Now, disconnect the socket.
+    socket.disconnect();
+
+    // 3. Clean up state.
+    set({ socket: null, onlineUsers: [] }); // Also clear online users list
+    console.log('Emitted logout event and disconnected socket');
+  } else {
+    console.log('No socket to disconnect');
   }
-},
+}
 
 
 }))

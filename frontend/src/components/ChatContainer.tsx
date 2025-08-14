@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useChatStore } from '@/store/useChatStore'
+import { useAuthStore } from '@/store/useAuthStore'
 import { ArrowLeft, Send, MoreVertical, Phone, Video } from 'lucide-react'
 import MessageInput from './MessageInput'
 import { Message } from '@/store/useChatStore'
 
 function ChatContainer() {
   const { selectedUser, setSelectedUser, messages, getMessages, sendMessage, isMessagesLoading } = useChatStore()
+  const { onlineUsers } = useAuthStore()
   const [message, setMessage] = useState('')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -51,11 +53,15 @@ function ChatContainer() {
                 alt={selectedUser.username}
                 className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
               />
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+              {onlineUsers.includes(selectedUser._id) && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+              )}
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 text-lg">{selectedUser.username}</h3>
-              <p className="text-sm text-green-600">Online</p>
+              <p className={`text-sm ${onlineUsers.includes(selectedUser._id) ? 'text-green-600' : 'text-gray-500'}`}>
+                {onlineUsers.includes(selectedUser._id) ? 'Online' : 'Offline'}
+              </p>
             </div>
           </div>
         </div>

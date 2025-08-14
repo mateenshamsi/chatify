@@ -1,12 +1,14 @@
 import {create} from 'zustand';
 import toast from 'react-hot-toast';
 import  {axiosInstance}  from '../lib/axios';
+import { useAuthStore } from './useAuthStore';
 
 export interface User {
     _id: string;
     username: string;
     email: string;
     profilePicture?: string;
+    isOnline?: boolean;
 }
 
 export interface Message {
@@ -41,7 +43,12 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
         set({ isUserLoading: true });
         try {
             const response = await axiosInstance.get('/api/messages/get/users');
-            set({ users: response.data, isUserLoading: false });
+            const onlineUsers = useAuthStore.getState().onlineUsers;
+            const usersWithOnlineStatus = response.data.map((user: User) => ({
+                ...user,
+                isOnline: onlineUsers.includes(user._id)
+            }));
+            set({ users: usersWithOnlineStatus, isUserLoading: false });
         } catch (error) {
             console.error('Error fetching users:', error);
             toast.error('Failed to fetch users');

@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import { useChatStore } from '@/store/useChatStore'
+import { useAuthStore } from '@/store/useAuthStore'
 import { Search, User, X } from 'lucide-react'
 
 export default function SidebarComponent() {
   const { users, getUsers, setSelectedUser, selectedUser, isUserLoading } = useChatStore()
+  const { onlineUsers } = useAuthStore()
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     getUsers()
   }, [getUsers])
+
+  useEffect(() => {
+    // Refresh users when onlineUsers changes to update their online status
+    getUsers()
+  }, [onlineUsers, getUsers])
 
   // Filter users based on search query
   const filteredUsers = users.filter(user => 
@@ -79,8 +86,8 @@ export default function SidebarComponent() {
           <div className="p-2">
             <div className="space-y-1">
               {filteredUsers.map((user) => (
-                <UserItem 
-                  key={user.id || user.username}
+                <UserItem
+                  key={user._id || user.username}
                   user={user}
                   isSelected={getIsUserSelected(user, selectedUser)}
                   onClick={() => setSelectedUser(user)}
@@ -95,12 +102,12 @@ export default function SidebarComponent() {
 }
 
 // Fixed selection logic function
-function getIsUserSelected(user, selectedUser) {
+function getIsUserSelected(user: any, selectedUser: any) {
   if (!selectedUser) return false
   
   // Prioritize ID comparison if both users have IDs
-  if (user.id && selectedUser.id) {
-    return user.id === selectedUser.id
+  if (user._id && selectedUser._id) {
+    return user._id === selectedUser._id
   }
   
   // Fallback to username comparison if IDs are not available
@@ -112,9 +119,10 @@ function getIsUserSelected(user, selectedUser) {
 }
 
 // Separate UserItem component for better organization
-function UserItem({ user, isSelected, onClick }) {
-  // Determine if user is online (you can modify this logic based on your data)
-  const isOnline = user.isOnline || false
+function UserItem({ user, isSelected, onClick }: { user: any; isSelected: boolean; onClick: () => void }) {
+  const { onlineUsers } = useAuthStore()
+  // Determine if user is online based on onlineUsers array
+  const isOnline = onlineUsers.includes(user._id)
   
   return (
     <button
