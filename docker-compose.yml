@@ -6,19 +6,25 @@ services:
       - "27017:27017" 
     volumes:
       - mongo_data:/data/db 
-  chatapp:  
+  chatapp_backend:  
     build: 
-          context: .
+          context: /backend
           dockerfile: Dockerfile 
     container_name: chatify_backend
-    environment:
-          - MONGODB_URL=mongodb+srv://matinshamsi16:marziyashamsi@cluster0.hx5zxem.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-          - CLIENT_URL=localhost:5173
-          - PORT=3000
-          - JWT_SECRET=my_super_secret_key
+    env_file:
+          - ./backend/.env 
     ports: 
           - "3000:3000"
     depends_on: 
           - mongo
+  chatapp_frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile 
+    container_name: chatify_frontend 
+    ports: 
+      - "5173:5173" 
+    depends_on: 
+      - chatapp_backend  
 volumes: 
   mongo_data:
