@@ -11,9 +11,9 @@ import { server, app } from './lib/socket';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
 
-// Middleware
+
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: "http://localhost:5173",
   credentials: true,
 }));
 
@@ -27,13 +27,9 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api', router);
-
-// DB Connection
 connectDB()
   .then(() => console.log('Database connected successfully'))
   .catch((error) => console.error('Database connection failed:', error));
-
-// Start server
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Client URL: ${process.env.CLIENT_URL}`);
